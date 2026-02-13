@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>xxx  |  xxx Classic Online</title>
+
+<meta name="description" content="Play xxx Pong Game online. A responsive xxx classic arcade pong game playable on mobile and desktop. Enjoy the best xxx browser game free.">
+<meta name="keywords" content="xxx, xxx pong game, xxx arcade game, play xxx online, responsive xxx game, html5 xxx game, xxxxx, xxxxx game">
+<meta name="author" content="xxx Games">
+
+<style>
+body{
+margin:0;
+background:#0a0a0a;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:100vh;
+font-family:Arial, sans-serif;
+color:white;
+overflow:hidden;
+}
+
+h1{
+font-size:clamp(18px,3vw,32px);
+margin:10px;
+text-align:center;
+}
+
+canvas{
+background:black;
+border:3px solid #00ffcc;
+max-width:95vw;
+max-height:75vh;
+}
+
+#score{
+margin:10px;
+font-size:clamp(18px,3vw,28px);
+letter-spacing:2px;
+}
+
+footer{
+font-size:12px;
+opacity:.6;
+margin-top:8px;
+}
+</style>
+</head>
+<body>
+
+<h1>xxx Pong Game</h1>
+<div id="score">0 : 0</div>
+<canvas id="game"></canvas>
+<footer>Play xxx responsive HTML5 pong game</footer>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+canvas.width = window.innerWidth * 0.9;
+canvas.height = window.innerHeight * 0.7;
+}
+resize();
+window.addEventListener("resize", resize);
+
+/* GAME OBJECTS */
+let paddleWidth = 12;
+let paddleHeight = 100;
+
+let player = {
+x:10,
+y:100,
+score:0
+};
+
+let ai = {
+x:0,
+y:100,
+score:0
+};
+
+let ball = {
+x:300,
+y:200,
+r:10,
+speed:5,
+dx:5,
+dy:5
+};
+
+function resetBall(){
+ball.x = canvas.width/2;
+ball.y = canvas.height/2;
+ball.dx *= -1;
+ball.dy = 5 * (Math.random()>0.5?1:-1);
+}
+
+/* CONTROLS */
+document.addEventListener("keydown",e=>{
+if(e.key==="ArrowUp") player.y -= 30;
+if(e.key==="ArrowDown") player.y += 30;
+});
+
+/* TOUCH CONTROL */
+canvas.addEventListener("touchmove", e=>{
+let rect = canvas.getBoundingClientRect();
+let touchY = e.touches[0].clientY - rect.top;
+player.y = touchY - paddleHeight/2;
+});
+
+/* UPDATE */
+function update(){
+ai.x = canvas.width - paddleWidth - 10;
+
+/* BALL MOVE */
+ball.x += ball.dx;
+ball.y += ball.dy;
+
+/* WALL COLLISION */
+if(ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
+
+/* PLAYER COLLISION */
+if(
+ball.x - ball.r < player.x + paddleWidth &&
+ball.y > player.y &&
+ball.y < player.y + paddleHeight
+){
+ball.dx *= -1;
+}
+
+/* AI COLLISION */
+if(
+ball.x + ball.r > ai.x &&
+ball.y > ai.y &&
+ball.y < ai.y + paddleHeight
+){
+ball.dx *= -1;
+}
+
+/* SCORE */
+if(ball.x < 0){
+ai.score++;
+resetBall();
+}
+
+if(ball.x > canvas.width){
+player.score++;
+resetBall();
+}
+
+document.getElementById("score").innerText =
+player.score + " : " + ai.score;
+
+/* AI MOVEMENT */
+let aiCenter = ai.y + paddleHeight/2;
+if(aiCenter < ball.y) ai.y += 3;
+else ai.y -= 3;
+
+/* LIMITS */
+player.y = Math.max(0, Math.min(canvas.height-paddleHeight, player.y));
+ai.y = Math.max(0, Math.min(canvas.height-paddleHeight, ai.y));
+}
+
+/* DRAW */
+function draw(){
+ctx.fillStyle="black";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+/* NET */
+ctx.strokeStyle="#00ffcc";
+ctx.setLineDash([5,15]);
+ctx.beginPath();
+ctx.moveTo(canvas.width/2,0);
+ctx.lineTo(canvas.width/2,canvas.height);
+ctx.stroke();
+
+/* PADDLES */
+ctx.fillStyle="#00ffcc";
+ctx.fillRect(player.x,player.y,paddleWidth,paddleHeight);
+ctx.fillRect(ai.x,ai.y,paddleWidth,paddleHeight);
+
+/* BALL */
+ctx.beginPath();
+ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
+ctx.fill();
+}
+
+/* LOOP */
+function game(){
+update();
+draw();
+requestAnimationFrame(game);
+}
+game();
+</script>
+
+</body>
+</html>
